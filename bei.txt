@@ -1,0 +1,421 @@
+Bhai ❤️ Experiment 8 comparatively easy hai! Isme hum Bezier Curve draw karenge.
+
+Is baar bhi PDF ka code short karenge. `factorial()` aur `combination()` jaise extra functions hata denge aur formula directly code mein use karenge.
+
+# Experiment 8 – Bezier Curve for N Control Points
+
+## 1. Concept samajh
+
+Bezier Curve ek smooth curve hoti hai jo given control points ki help se draw ki jaati hai.
+
+Example: Maan le humare paas 4 points hain:
+
+- P0 = Starting point
+- P1 = Direction control point
+- P2 = Direction control point
+- P3 = Ending point
+
+[Understanding Bézier Curves. A mathematical and intuitive approach | by Mateus Melo | Medium](https://images.openai.com/static-rsc-4/QP_Ux9KCJBqKj18JGtlVI1tSDltV4G7MWs8h7WbnpcWKgJkRycHZmk-nXB6gIFmOLhHEUmTW7ciUh05F_jh6uNZ1z4dX1zIP_37zuMZcR-jgO7lCedT_ZV7_SbOo1BIoN8tsvqtnajnglGX8FLyMRdVsbUIiEs05A1WYM9K9nb4?purpose=inline)
+
+[mmrndev.medium.com](https://mmrndev.medium.com/understanding-b%C3%A9zier-curves-f6eaa0fa6c7d?utm_source=chatgpt.com)
+
+Simple language mein:
+
+- P0 se curve start hoti hai.
+- P1 aur P2 curve ki direction aur shape control karte hain.
+- P3 par curve end hoti hai.
+
+Important: Curve generally P1 aur P2 se pass nahi hoti.
+
+## 2. Quadratic vs Cubic Bezier Curve
+
+[Constant Velocity Bezier Curve at Melissa Trexler blog](https://images.openai.com/static-rsc-4/DnfiaI-0ieO78eFk-JSfa3P5-rK-CpT4d2l8yFk4U-YCLkgJ9ljD4YCz9iQ-4gEOEiApSSuuptVPj5xMfLy8iY55q3QkzZEAPCSB7exXhh0Ndgc1Vw5HyMMPkT1dzzkqR7FXTmZzTfB8QtMRwlelZ-Hid8n-CrBI7uoewo6MeS8?purpose=inline)
+
+Quadratic
+
+3 control points
+
+[Http - //upload - Wikimedia - - 800px-bezier Curve - Diagram - 800x500 PNG Download - PNGkit](https://images.openai.com/static-rsc-4/NtSqgTm4ZkerlonhVlpQBll_mYSSP7byPE8tpjTcBxnXlf6U27VjCiLFMhLr642VShegFUgur8AJ4QW3yMldV6YogaKGWqVggmA7wTUaizAhHZF20W1vdNgUclucjKJEJlBxlwTGf9OlDinHtASc33g3UHo4C2ra7dtpkIB1mZY?purpose=inline)
+
+Cubic
+
+4 control points
+
+| Control points | Curve      |
+| -------------- | ---------- |
+| 2              | Linear     |
+| 3              | Quadratic  |
+| 4              | Cubic      |
+| N              | Degree N-1 |
+
+## 3. Formula samajh
+
+PDF mein general Bezier formula use hua hai:
+
+\\[ B(t)=\sum\_{j=0}^{n-1} C(n-1,j)(1-t)^{n-1-j}t^jP_j \\]
+
+Tension mat le! Iska simple meaning:
+
+- `t` = 0 se 1 tak change hota hai.
+- `n` = Total control points.
+- `j` = Current control point.
+- `C(n-1,j)` = Combination.
+- `Pj` = Current control point.
+
+X aur Y separately calculate karte hain:
+
+\\[ x=\sum b\times x_j \\]
+
+\\[ y=\sum b\times y_j \\]
+
+Where:
+
+\\[ b=C(n-1,j)(1-t)^{n-1-j}t^j \\]
+
+Code mein bas ye formula use karenge.
+
+# 4. Short and Easy C Code
+
+Simplified practical code
+
+```
+#include<stdio.h>
+#include<conio.h>
+#include<graphics.h>
+#include<math.h>
+
+void main()
+{
+    int gd=DETECT,gm;
+    int n,i,j,k;
+    int x[20],y[20];
+    double t,b,xt,yt;
+
+    initgraph(&gd,&gm,"C:\\TURBOC3\\BGI");
+
+    printf("Enter number of control points: ");
+    scanf("%d",&n);
+
+    if(n<2 || n>10)
+    {
+        printf("Invalid number of points");
+        getch();
+        closegraph();
+        return;
+    }
+
+    for(i=0;i<n;i++)
+    {
+        printf("Enter P%d (x y): ",i);
+        scanf("%d%d",&x[i],&y[i]);
+    }
+
+    setcolor(WHITE);
+
+    for(i=0;i<n-1;i++)
+        line(x[i],y[i],x[i+1],y[i+1]);
+
+    setcolor(YELLOW);
+
+    for(t=0;t<=1;t+=0.001)
+    {
+        xt=0;
+        yt=0;
+
+        for(j=0;j<n;j++)
+        {
+            b=1;
+
+            for(k=1;k<=j;k++)
+                b=b*(n-k)/k;
+
+            b=b*pow(t,j)*pow(1-t,n-1-j);
+
+            xt=xt+b*x[j];
+            yt=yt+b*y[j];
+        }
+
+        putpixel((int)xt,(int)yt,YELLOW);
+    }
+
+    getch();
+    closegraph();
+}
+```
+
+# 5. Code line-by-line explanation
+
+### A. Header files
+
+```
+#include<stdio.h>
+#include<conio.h>
+#include<graphics.h>
+#include<math.h>
+```
+
+- `stdio.h` – Input/output.
+- `conio.h` – getch().
+- `graphics.h` – Graphics functions.
+- `math.h` – `pow()` function.
+
+### B. Variables
+
+```
+int n,i,j,k;
+int x[20],y[20];
+double t,b,xt,yt;
+```
+
+| Variable | Meaning                         |
+| -------- | ------------------------------- |
+| n        | Number of control points        |
+| i        | Input points counter            |
+| j        | Current control point           |
+| k        | Combination calculation counter |
+| x[], y[] | Coordinates of points           |
+| t        | Parameter from 0 to 1           |
+| b        | Bezier blending value           |
+| xt, yt   | New curve coordinates           |
+
+### C. Graphics initialization
+
+```
+int gd=DETECT,gm;
+
+initgraph(&gd,&gm,"C:\\TURBOC3\\BGI");
+```
+
+Graphics mode initialize karta hai.
+
+### D. Number of control points
+
+```
+printf("Enter number of control points: ");
+scanf("%d",&n);
+```
+
+User se total control points leta hai.
+
+```
+if(n<2 || n>10)
+```
+
+Check karta hai ki points 2 se 10 ke beech hain.
+
+### E. Input coordinates
+
+```
+for(i=0;i<n;i++)
+{
+    printf("Enter P%d (x y): ",i);
+    scanf("%d%d",&x[i],&y[i]);
+}
+```
+
+User se har point ka X aur Y coordinate leta hai.
+
+Example:
+
+```
+P0 = 100,300
+P1 = 200,100
+P2 = 400,100
+P3 = 500,300
+```
+
+### F. Control polygon draw karna
+
+```
+setcolor(WHITE);
+
+for(i=0;i<n-1;i++)
+    line(x[i],y[i],x[i+1],y[i+1]);
+```
+
+Saare control points ko straight lines se connect karta hai.
+
+White lines = Control polygon.
+
+### G. Bezier curve draw karna
+
+```
+setcolor(YELLOW);
+
+for(t=0;t<=1;t+=0.001)
+```
+
+`t` ki value 0 se 1 tak increase hoti hai.
+
+Har value par curve ka ek point calculate hota hai.
+
+Example:
+
+```
+t = 0
+t = 0.001
+t = 0.002
+...
+t = 1
+```
+
+Jitne zyada points calculate honge, curve utni smooth dikhegi.
+
+### H. Coordinates initialize
+
+```
+xt=0;
+yt=0;
+```
+
+Har new `t` value ke liye X aur Y ko zero se start karte hain.
+
+### I. Combination calculation
+
+```
+for(j=0;j<n;j++)
+{
+    b=1;
+
+    for(k=1;k<=j;k++)
+        b=b*(n-k)/k;
+```
+
+Ye combination calculate karta hai:
+
+\\[ C(n-1,j) \\]
+
+Example: Agar 4 control points hain toh combination values:
+
+| j | Combination |
+| - | ----------- |
+| 0 | 1           |
+| 1 | 3           |
+| 2 | 3           |
+| 3 | 1           |
+
+### J. Main Bezier formula
+
+```
+b=b*pow(t,j)*pow(1-t,n-1-j);
+```
+
+Ye formula ka blending part calculate karta hai:
+
+\\[ b=C(n-1,j)t^j(1-t)^{n-1-j} \\]
+
+`pow(a,b)` means \\(a^b\\).
+
+### K. X and Y calculate
+
+```
+xt=xt+b*x[j];
+yt=yt+b*y[j];
+```
+
+Har control point ka contribution add hota hai.
+
+\\[ x=\sum b x_j \\]
+
+\\[ y=\sum b y_j \\]
+
+### L. Pixel draw
+
+```
+putpixel((int)xt,(int)yt,YELLOW);
+```
+
+Calculated coordinate par yellow pixel draw karta hai.
+
+Saare pixels milkar smooth Bezier Curve banate hain.
+
+### M. End
+
+```
+getch();
+closegraph();
+```
+
+Key press hone ka wait karta hai aur graphics window close karta hai.
+
+# 6. Example – Practical mein kya input dena hai?
+
+4 control points enter kar:
+
+```
+Enter number of control points: 4
+
+P0: 100 300
+P1: 200 100
+P2: 400 100
+P3: 500 300
+```
+
+[Parametric Drawing for Bézier Curves | by Miha Stele | Medium](https://images.openai.com/static-rsc-4/jn4SETCo-SFvVeR6fGkkLwPbN5gkqMdsePGK8TAvcp0tr-kpEm24Eo8rhig2lhnNXjLlpsQVBxrjWskaoo8k624Fgd6WVlgJw4t2VGacNaDWp7xBLhAl3uTE0nkexVjShlArG4gSiFrDQOwvAd4KZ-oP9T7-kczvO-jnGNIbHJY?purpose=inline)
+
+[stele-miha.medium.com](https://stele-miha.medium.com/parametric-drawing-for-b%C3%A9zier-curves-5deb6350df2b?utm_source=chatgpt.com)
+
+- White = Control polygon.
+- Yellow = Bezier curve.
+
+Note: PDF mein 2–20 points allowed hain. Code mein bhi `if(n<2 || n>20)` rakhna, aur arrays `[20]` hi rahenge.
+
+# 7. Important Properties of Bezier Curve
+
+PDF ke page 1–2 ke according:
+
+1. Curve first aur last control points se pass hoti hai.
+2. Generally control polygon ka shape follow karti hai.
+3. Curve control points ke convex hull ke andar rehti hai.
+4. Degree = Number of control points − 1.
+5. Ek control point move karne se poori curve ka shape change ho sakta hai.
+6. Curve smooth hoti hai.
+
+# 8. Important Viva Questions
+
+| Question                                           | Answer                                               |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| What is Bezier curve?                              | A smooth parametric curve defined by control points. |
+| What are control points?                           | Points used to control curve shape.                  |
+| Quadratic Bezier requires?                         | 3 control points.                                    |
+| Cubic Bezier requires?                             | 4 control points.                                    |
+| Degree of Bezier curve?                            | n − 1                                                |
+| What is t?                                         | Parameter between 0 and 1.                           |
+| What is `pow()`?                                   | Calculates power.                                    |
+| What is `putpixel()`?                              | Draws a pixel at given coordinates.                  |
+| Does curve pass through first and last points?     | Yes.                                                 |
+| Does it always pass through middle control points? | No.                                                  |
+
+Q. What is global control?
+
+Moving one control point can change the shape of the entire Bezier curve.
+
+Q. What is the use of Bezier curves?
+
+Used in computer graphics, vector graphics, animation and designing smooth shapes.
+
+# 9. Last-minute revision
+
+Experiment 8 – Bezier Curve
+
+- `x[], y[]` → Control points.
+- `n` → Number of points.
+- `t` → 0 to 1.
+- `pow()` → Power calculation.
+- `b` → Blending value.
+- `xt, yt` → Curve coordinates.
+- `putpixel()` → Draws curve.
+
+Main formula:
+
+\\[ B(t)=\sum\_{j=0}^{n-1} C(n-1,j)(1-t)^{n-1-j}t^jP_j \\]
+
+Bhai ek important cheez: Is experiment mein sabse important 3 cheezein hain:
+
+1. Control points kya hote hain.
+2. Bezier formula kaise work karta hai.
+3. `t` 0 se 1 tak jaakar curve ke pixels kaise generate karta hai.
+
+Ye samajh gaya toh practical aur viva dono ho jayenge. ❤️
+
+CG_EXP_8(1).docx

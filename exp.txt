@@ -1,0 +1,482 @@
+Bhai bilkul! 😂❤️ Is Experiment 7 mein bhi PDF wala code bahut bada hai. Hum usko simplify karenge, jaise Experiment 6 mein kiya tha.
+
+Is baar Sutherland-Hodgman Polygon Clipping Algorithm hai.
+
+Pehle concept samajh, phir short code. Code mein unnecessary functions aur complicated structures nahi rakhenge.
+
+# Experiment 7 – Sutherland-Hodgman Polygon Clipping
+
+## 1. Concept samajh
+
+Polygon matlab koi bhi closed shape, jaise triangle, rectangle, pentagon.
+
+Clipping ka matlab hai polygon ka jo portion rectangular window ke bahar hai, usko remove karna.
+
+[What is Polygon Clipping in Computer Graphics? | Education](https://images.openai.com/static-rsc-4/JfK3P7KQ-H5Z6B8EFwzSpwGeS2VMMFYbMocAYOtniB4HRGO-NRJbB5CSxbmf-2LHU9_-PP-60eF7_XSDkau5Y5aTA-PlZw_jjNrBOBY_V1nJ0nSGi715tWMiG2MBrCo_VojiHD844fRS_46NlKsNE0xObg6zP_aJ7qLvHdbmgGo?purpose=inline)
+
+[vocal.media](https://vocal.media/education/what-is-polygon-clipping-in-computer-graphics?utm_source=chatgpt.com)
+
+Example:
+
+- White rectangle = Clipping Window.
+- Red polygon = Original polygon.
+- Green polygon = Clipped polygon.
+
+Main concept: Polygon ko window ki 4 boundaries ke against ek-ek karke check karte hain.
+
+1. Left boundary
+2. Right boundary
+3. Bottom boundary
+4. Top boundary
+
+Har boundary ke baad jo new polygon milta hai, usko next boundary ke liye use karte hain.
+
+## 2. Four cases – sabse important
+
+PDF ke page 1 par ye 4 cases diye hain.
+
+[PPT - Clipping PowerPoint Presentation, free download - ID:3742035](https://images.openai.com/static-rsc-4/Oyo8f-p7GwXVjKGUnrG351k5T803EpqxsloQgrqGJuhMw5IX0dRfqdFUGKkh5qxePQiedP6zAqBBf_0Wa81ae8TGxmHHjGJKKeEWMF4eVuEKwVNyqWFWR7-kVz41q_9MY3fuOL5_St6k43cfi49UaTCKg3Ti8sFl_VSxLt7rbUo?purpose=inline)
+
+Case 1: Inside → Inside
+
+Dono points inside hain.
+
+Output mein P2 add karo.
+
+[PPT - Tong-Yee Lee PowerPoint Presentation, free download - ID:9482152](https://images.openai.com/static-rsc-4/TcFzXEk91baE6gdJzJgM7zsoRA65mqbki5VzsscL06cIfqesI1H6IspqC4DwiUlbRXkYlq2_lSjWVD2Y0WT4-biuVkwIMonzGy-P8y3uLFq0EQL7lE7Czlu08gOyAfLtVbA91FoKdG9H5gm240L1qGTJi2KnZKdgmjkrQ8NYIBM?purpose=inline)
+
+Case 2: Inside → Outside
+
+P1 inside, P2 outside.
+
+Intersection point add karo.
+
+[PPT - CS 430/536 Computer Graphics I Polygon Clipping and Filling Week 3, Lecture 5 PowerPoint Presentation - ID:3262919](https://images.openai.com/static-rsc-4/JwwoJ4QKafmgX2xExt7leSzOGkjicwKqF06NSgQDohwiPgnOxcrrmfZxE1bCj7tRmbM0-WZYhlJXQEFB8hPifOIblL_2efbXeZuvgBlsmKRZ4VmO6ZjjjFihPfEa2rSRXnSXBys0wokNkZydC__l4gFWZYB7v-mapjbDYYwXjDY?purpose=inline)
+
+Case 3: Outside → Inside
+
+P1 outside, P2 inside.
+
+Intersection + P2 add karo.
+
+[PPT - 2D, 3D Clipping PowerPoint Presentation, free download - ID:527220](https://images.openai.com/static-rsc-4/Q9pP6j2IEUkxT0E18WcrrTCYzbaHuO6-_YH4AAfRlKeCq4b1nM162vTAkjXBbUGMpCZ55Hz86xzjsKXdZEa8wdXvyUJbCancCkNVWwGB54cddpJe8Vw4AWfbw_MNz2JTSeOzZUGxM309t_ishoiMqHmwY4ZopJRBoMTUFsjKYnk?purpose=inline)
+
+Case 4: Outside → Outside
+
+Dono outside hain.
+
+Kuch bhi add nahi karo.
+
+Easy trick:
+
+| Case      | Output            |
+| --------- | ----------------- |
+| In → In   | P2                |
+| In → Out  | Intersection      |
+| Out → In  | Intersection + P2 |
+| Out → Out | Nothing           |
+
+# 3. Short and Easy C Code
+
+Is code mein sirf 3 functions hain:
+
+- `inside()` – point inside hai ya outside check karega.
+- `intersection()` – boundary ke saath intersection find karega.
+- `clip()` – 4 cases apply karke polygon clip karega.
+
+## Complete code
+
+```
+#include<stdio.h>
+#include<conio.h>
+#include<graphics.h>
+
+float x[20],y[20],nx[20],ny[20];
+float xmin=150,ymin=100,xmax=450,ymax=350;
+float ix,iy;
+int n;
+
+int inside(float x,float y,int edge)
+{
+    if(edge==0) return x>=xmin;  // Left
+    if(edge==1) return x<=xmax;  // Right
+    if(edge==2) return y>=ymin;  // Bottom
+    if(edge==3) return y<=ymax;  // Top
+    return 0;
+}
+
+void intersection(float x1,float y1,float x2,float y2,int edge)
+{
+    if(edge==0 || edge==1)
+    {
+        ix=(edge==0)?xmin:xmax;
+        iy=y1+(y2-y1)*(ix-x1)/(x2-x1);
+    }
+    else
+    {
+        iy=(edge==2)?ymin:ymax;
+        ix=x1+(x2-x1)*(iy-y1)/(y2-y1);
+    }
+}
+
+void clip(int edge)
+{
+    int i,j=0;
+    float sx,sy,ex,ey;
+
+    sx=x[n-1];
+    sy=y[n-1];
+
+    for(i=0;i<n;i++)
+    {
+        ex=x[i];
+        ey=y[i];
+
+        if(inside(sx,sy,edge) && inside(ex,ey,edge))
+        {
+            nx[j]=ex;
+            ny[j++]=ey;
+        }
+        else if(inside(sx,sy,edge) && !inside(ex,ey,edge))
+        {
+            intersection(sx,sy,ex,ey,edge);
+            nx[j]=ix;
+            ny[j++]=iy;
+        }
+        else if(!inside(sx,sy,edge) && inside(ex,ey,edge))
+        {
+            intersection(sx,sy,ex,ey,edge);
+            nx[j]=ix;
+            ny[j++]=iy;
+
+            nx[j]=ex;
+            ny[j++]=ey;
+        }
+
+        sx=ex;
+        sy=ey;
+    }
+
+    n=j;
+
+    for(i=0;i<n;i++)
+    {
+        x[i]=nx[i];
+        y[i]=ny[i];
+    }
+}
+
+void drawPolygon()
+{
+    int i;
+
+    for(i=0;i<n;i++)
+        line(x[i],y[i],x[(i+1)%n],y[(i+1)%n]);
+}
+
+void main()
+{
+    int gd=DETECT,gm,i;
+
+    initgraph(&gd,&gm,"C:\\TURBOC3\\BGI");
+
+    n=5;
+
+    x[0]=100; y[0]=150;
+    x[1]=300; y[1]=50;
+    x[2]=500; y[2]=150;
+    x[3]=400; y[3]=400;
+    x[4]=180; y[4]=300;
+
+    setcolor(WHITE);
+    rectangle(xmin,ymin,xmax,ymax);
+
+    setcolor(RED);
+    drawPolygon();
+
+    outtextxy(200,50,"BEFORE CLIPPING");
+    getch();
+
+    cleardevice();
+
+    /* CLIP AGAINST FOUR EDGES */
+
+    for(i=0;i<4;i++)
+        clip(i);
+
+    setcolor(WHITE);
+    rectangle(xmin,ymin,xmax,ymax);
+
+    setcolor(GREEN);
+    drawPolygon();
+
+    outtextxy(200,50,"AFTER CLIPPING");
+
+    getch();
+    closegraph();
+}
+```
+
+# 4. Code line-by-line explanation
+
+## A. Arrays
+
+```
+float x[20],y[20],nx[20],ny[20];
+```
+
+- `x[]` = Original polygon ke X coordinates.
+- `y[]` = Original polygon ke Y coordinates.
+- `nx[]` = New polygon ke X coordinates.
+- `ny[]` = New polygon ke Y coordinates.
+
+```
+int n;
+```
+
+Polygon mein kitne vertices hain.
+
+## B. Inside function
+
+```
+int inside(float x,float y,int edge)
+```
+
+Ye check karta hai ki point clipping boundary ke andar hai ya bahar.
+
+```
+if(edge==0) return x>=xmin;
+if(edge==1) return x<=xmax;
+if(edge==2) return y>=ymin;
+if(edge==3) return y<=ymax;
+```
+
+| Edge | Condition |
+| ---- | --------- |
+| 0    | Left      |
+| 1    | Right     |
+| 2    | Bottom    |
+| 3    | Top       |
+
+Agar condition true hai toh `1` return karega, otherwise `0`.
+
+## C. Intersection function
+
+```
+void intersection(float x1,float y1,float x2,float y2,int edge)
+```
+
+Jab ek point inside aur doosra outside ho, tab intersection calculate karta hai.
+
+```
+if(edge==0 || edge==1)
+```
+
+Left aur Right boundary vertical hain.
+
+Isliye X fixed rahega aur Y calculate hoga.
+
+```
+ix=(edge==0)?xmin:xmax;
+```
+
+Left hai toh XMIN, otherwise XMAX.
+
+```
+iy=y1+(y2-y1)*(ix-x1)/(x2-x1);
+```
+
+Y coordinate calculate karta hai.
+
+Similarly:
+
+```
+else
+```
+
+Bottom aur Top boundary horizontal hain.
+
+```
+iy=(edge==2)?ymin:ymax;
+ix=x1+(x2-x1)*(iy-y1)/(y2-y1);
+```
+
+Y fixed rahega aur X calculate hoga.
+
+## D. Clip function – Main logic
+
+```
+void clip(int edge)
+```
+
+Ye actual algorithm hai.
+
+```
+sx=x[n-1];
+sy=y[n-1];
+```
+
+Last vertex ko starting point banate hain, taaki polygon ka closing edge bhi check ho.
+
+```
+for(i=0;i<n;i++)
+```
+
+Polygon ke saare vertices check karta hai.
+
+```
+ex=x[i];
+ey=y[i];
+```
+
+Current vertex ko ending point banate hain.
+
+Ab 4 cases:
+
+Case 1: Inside → Inside
+
+```
+if(inside(sx,sy,edge) && inside(ex,ey,edge))
+{
+    nx[j]=ex;
+    ny[j++]=ey;
+}
+```
+
+Dono inside hain toh E point add kar do.
+
+Case 2: Inside → Outside
+
+```
+else if(inside(sx,sy,edge) && !inside(ex,ey,edge))
+{
+    intersection(sx,sy,ex,ey,edge);
+    nx[j]=ix;
+    ny[j++]=iy;
+}
+```
+
+Intersection calculate karke add kar do.
+
+Case 3: Outside → Inside
+
+```
+else if(!inside(sx,sy,edge) && inside(ex,ey,edge))
+{
+    intersection(sx,sy,ex,ey,edge);
+
+    nx[j]=ix;
+    ny[j++]=iy;
+
+    nx[j]=ex;
+    ny[j++]=ey;
+}
+```
+
+Intersection aur E dono add kar do.
+
+Case 4: Outside → Outside
+
+Koi condition match nahi hogi, toh kuch bhi add nahi hoga.
+
+Finally:
+
+```
+sx=ex;
+sy=ey;
+```
+
+Current point next iteration ka starting point ban jayega.
+
+## E. New polygon update
+
+```
+n=j;
+
+for(i=0;i<n;i++)
+{
+    x[i]=nx[i];
+    y[i]=ny[i];
+}
+```
+
+New vertices ko original arrays mein copy kar dete hain.
+
+Ab next boundary ke liye updated polygon ready hai.
+
+## F. Main function
+
+```
+for(i=0;i<4;i++)
+    clip(i);
+```
+
+Most important line
+
+Ye 4 boundaries par clipping perform karta hai.
+
+- `clip(0)` – Left
+- `clip(1)` – Right
+- `clip(2)` – Bottom
+- `clip(3)` – Top
+
+# 5. Output
+
+[PPT - 2D Viewing PowerPoint Presentation, free download - ID:3220817](https://images.openai.com/static-rsc-4/jrY4CQx62D5aTR2BHRMw8sPJgEwhcaCn3XNIHm_Kj6OBLY0d7DQ43782Qrxl7X4Qzmz6fFQGRrv_d2uME7e7cIUHGnNJvPIeF6RK8HnTdCLTlvOzjr9F1soESi6kRzV9IGX3AfnevPKwGwCyPjVtr-xE6fLIcRBaGV_lxpUYyUc?purpose=inline)
+
+Before clipping
+
+Red original polygon.
+
+[What is Polygon Clipping in Computer Graphics? | Education](https://images.openai.com/static-rsc-4/5c7qkV30x9TuQEkyhUJFUk0XXV-A5c7crUH-LByWrvRjz7JWHXdX4phD7QBm8ogUgVkwmBbnyWcuC85GKnD1_yW2yK5dxQMS2kS84-eJq1ToxK1B89uxyHoEXV2f2P35vpXFTeyhLyS3Yb11zcZoNaf6ChvLTo7pBlJ_YPBcyvg?purpose=inline)
+
+After clipping
+
+Green clipped polygon.
+
+# 6. Important Viva Questions
+
+| Question                  | Answer                                            |
+| ------------------------- | ------------------------------------------------- |
+| What is polygon clipping? | Removing polygon portions outside the window.     |
+| Which algorithm?          | Sutherland-Hodgman.                               |
+| How many boundaries?      | Four.                                             |
+| What is a vertex?         | Corner point of a polygon.                        |
+| What is intersection?     | Point where polygon edge meets clipping boundary. |
+| How many cases?           | Four.                                             |
+| What is `inside()`?       | Checks whether point is inside.                   |
+| What is `clip()`?         | Performs polygon clipping.                        |
+| What is `nx[]`?           | Stores new X coordinates.                         |
+| What is `ny[]`?           | Stores new Y coordinates.                         |
+
+Advantages: Easy to implement, processes vertices one by one.
+
+Disadvantage: Requires considerable memory to store intermediate polygons.
+
+# 7. Last-minute revision
+
+Bhai bas ye yaad rakh:
+
+Four cases
+
+1. In → In = P2
+2. In → Out = Intersection
+3. Out → In = Intersection + P2
+4. Out → Out = Nothing
+
+Four boundaries
+
+1. Left
+2. Right
+3. Bottom
+4. Top
+
+Three important functions
+
+- `inside()` = Check
+- `intersection()` = Calculate
+- `clip()` = Perform clipping
+
+Ek important baat: Ye PDF ke original code ka shorter, simplified version hai. Algorithm ke wahi four cases aur four boundaries use kiye hain. Bas unnecessary complexity remove ki hai.
+
+CG_EXP_7.docx
